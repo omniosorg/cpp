@@ -25,7 +25,7 @@ CERRWARN =		-Wall -Wextra -Werror \
 			-Wno-unknown-pragmas \
 			-Wno-sign-compare \
 			-Wno-unused-label
-CFLAGS +=		-m32 -O2 $(CERRWARN) -I$(TOP)/src
+CFLAGS +=		-O2 $(CERRWARN) -I$(TOP)/src
 
 CC =			gcc
 YACC =			yacc
