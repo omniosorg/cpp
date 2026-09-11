@@ -1499,7 +1499,7 @@ main(int argc, char *argv[])
 				passcom++;
 				continue;
 			case 'D':
-				if (predef>prespc+NPREDEF) {
+				if (predef>=prespc+NPREDEF) {
 					pperror("too many -D options, "
 					    "ignoring %s", argv[i]);
 					continue;
@@ -1509,7 +1509,7 @@ main(int argc, char *argv[])
 					*predef++ = argv[i]+2;
 				continue;
 			case 'U':
-				if (prund>punspc+NPREDEF) {
+				if (prund>=punspc+NPREDEF) {
 					pperror("too many -U options, "
 					    "ignoring %s", argv[i]);
 					continue;
