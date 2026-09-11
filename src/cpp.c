@@ -1045,6 +1045,10 @@ stsym(register char *s) {
 
 	/* make definition look exactly like end of #define line */
 	/* copy to avoid running off end of world when param list is at end */
+	if (strlen(s) + 3 > sizeof (buf)) {
+		pperror("definition too long: %.32s...", s);
+		exit(exfail);
+	}
 	p=buf; while ((*p++= *s++) != '\0');
 	p=buf; while (isid(*p++)); /* skip first identifier */
 	if (*--p=='=') {*p++=' '; while (*p++);}
