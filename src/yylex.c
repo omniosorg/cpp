@@ -80,7 +80,7 @@
 #define COFF 0
 #endif
 
-static	long	tobinary(char *, int);
+static	int	tobinary(char *, int);
 
 int
 yylex(void)
@@ -135,12 +135,13 @@ ret:
 }
 }
 
-static long
+static int
 tobinary(char *st, int b)
 {
 	char *tmp;
-	int n;
-	n = strtoul(st, &tmp, b);
+	unsigned long long n;
+
+	n = strtoull(st, &tmp, b);
 	if (*tmp != '\0') {
 		if ((strcasecmp(tmp, "L") != 0) &&
 		    (strcasecmp(tmp, "LL") != 0) &&
@@ -148,5 +149,12 @@ tobinary(char *st, int b)
 		    (strcasecmp(tmp, "ULL") != 0))
 			pperror("illegal number: %s", st);
 	}
-	return(n);
+	/*
+	 * Expressions are evaluated as 32-bit int. Constants which do not
+	 * fit are clamped, as a 32-bit strtoul(3C) clamps them, so that
+	 * the result does not depend on the ISA for which cpp was built.
+	 */
+	if (n > 0xffffffffULL)
+		n = 0xffffffffULL;
+	return((int)n);
 }
