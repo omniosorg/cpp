@@ -826,6 +826,11 @@ dodef(char *p) {/* process '#define' */
 				*p='\0';
 				pperror("too many formals: %s",pin);
 				*p=c;
+			} else if (p-pin >= &formtxt[BUFFERSIZ]-cf) {
+				c= *p;
+				*p='\0';
+				pperror("formals too long: %s",pin);
+				*p=c;
 			} else {
 				*pf++=cf;
 				while (pin<p)
