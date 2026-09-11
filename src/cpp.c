@@ -1192,10 +1192,12 @@ subst(register char *p, struct symtab *sp) {
 	dump();
 	if (sp==ulnloc) {
 		vp=acttxt; *vp++='\0';
-		sprintf(vp,"%d",lineno[ifno]); while (*vp++);
+		snprintf(vp, sizeof (acttxt) - 1, "%d", lineno[ifno]);
+		while (*vp++);
 	} else if (sp==uflloc) {
 		vp=acttxt; *vp++='\0';
-		sprintf(vp,"\"%s\"",fnames[ifno]); while (*vp++);
+		snprintf(vp, sizeof (acttxt) - 1, "\"%s\"", fnames[ifno]);
+		while (*vp++);
 	}
 	if (0!=(params= *--vp&0xFF)) {/* definition calls for params */
 		register char **pa;
@@ -1222,6 +1224,10 @@ subst(register char *p, struct symtab *sp) {
 		if (*inp=='(') {
 			maclin=lineno[ifno]; macfil=fnames[ifno];
 			for (plvl=1; plvl!=0; ) {
+				if (ca >= &acttxt[BUFFERSIZ]) {
+					pperror("%s: actuals too long", sp->name);
+					exit(exfail);
+				}
 				*ca++='\0';
 				for (;;) {
 					outp=inp=p; p=cotoken(p);
@@ -1262,11 +1268,13 @@ subst(register char *p, struct symtab *sp) {
 						if (*inp == '\n' &&
 						    inp[-1] != '\\')
 							*inp = ' ';
+						if (ca >= &acttxt[BUFFERSIZ]) {
+							pperror("%s: actuals too long",
+							    sp->name);
+							exit(exfail);
+						}
 						*ca++= *inp++;
 					}
-					if (ca> &acttxt[BUFFERSIZ])
-						pperror("%s: actuals too long",
-						    sp->name);
 				}
 				if (pa>= &actual[MAXFRM])
 					ppwarn("%s: argument mismatch" ,
