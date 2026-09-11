@@ -300,8 +300,7 @@ static	int	elslvl;
 
 /* ARGSUSED */
 static void
-sayline(what)
-	char	*what;
+sayline(char *what)
 {
 	if (pflag==0)
 	    fprintf(fout,"# %d \"%s\" %s\n", lineno[ifno], fnames[ifno], what);
@@ -362,7 +361,7 @@ sayline(what)
  */
 
 static void
-dump() {
+dump(void) {
 	register char *p1;
 	if ((p1=outp)==inp || flslvl!=0) return;
 	fwrite(p1, inp - p1, 1, fout);
@@ -370,7 +369,7 @@ dump() {
 }
 
 static char *
-refill(p) register char *p; {
+refill(register char *p) {
 /*
  * dump buffer.  save chars from inp to p.  read into buffer at pbuf,
  * contiguous with p.  update pointers, return new p.
@@ -432,7 +431,7 @@ refill(p) register char *p; {
 #define LF 1
 
 static char *
-cotoken(p) register char *p; {
+cotoken(register char *p) {
 	register int c,i; char quoc;
 	static int state = BEG;
 
@@ -643,7 +642,7 @@ prevlf:
  * and I don't want to change it.
  */
 char *
-skipbl(p) register char *p; {/* get next non-blank token */
+skipbl(register char *p) {/* get next non-blank token */
 	do {
 		outp=inp=p;
 		p=cotoken(p);
@@ -652,7 +651,7 @@ skipbl(p) register char *p; {/* get next non-blank token */
 }
 
 static char *
-unfill(p) register char *p; {
+unfill(register char *p) {
 /*
  * take <= BUFFERSIZ chars from right end of buffer and put them on instack .
  * slide rest of buffer to the right, update pointers, return new p.
@@ -690,7 +689,7 @@ unfill(p) register char *p; {
 }
 
 static char *
-doincl(p) register char *p; {
+doincl(register char *p) {
 	int filok,inctype;
 	register char *cp; char **dirp,*nfil; char filname[BUFFERSIZ];
 
@@ -758,14 +757,14 @@ doincl(p) register char *p; {
 }
 
 static int
-equfrm(a,p1,p2) register char *a,*p1,*p2; {
+equfrm(register char *a, register char *p1, register char *p2) {
 	register char c; int flag;
 	c= *p2; *p2='\0';
 	flag=strcmp(a,p1); *p2=c; return(flag==SAME);
 }
 
 static char *
-dodef(p) char *p; {/* process '#define' */
+dodef(char *p) {/* process '#define' */
 	register char *pin,*psav,*cf;
 	char **pf,**qf; int b,c,params; struct symtab *np;
 	char *oldval,*oldsavch;
@@ -909,7 +908,7 @@ dodef(p) char *p; {/* process '#define' */
 #define sloscan() ptrtab=slotab+COFF
 
 void
-control(p) register char *p; {/* find and handle preprocessor control lines */
+control(register char *p) {/* find and handle preprocessor control lines */
 	register struct symtab *np;
 for (;;) {
 	fasscan(); p=cotoken(p); if (*inp=='\n') ++inp; dump();
@@ -1036,7 +1035,7 @@ for (;;) {
 }
 
 static struct symtab *
-stsym(s) register char *s; {
+stsym(register char *s) {
 	char buf[BUFFERSIZ]; register char *p;
 
 	/* make definition look exactly like end of #define line */
@@ -1050,7 +1049,7 @@ stsym(s) register char *s; {
 }
 
 static struct symtab *
-ppsym(s) char *s; {/* kluge */
+ppsym(char *s) {/* kluge */
 	register struct symtab *sp;
 	cinit=SALT; *savch++=SALT; sp=stsym(s); --sp->name; cinit=0; return(sp);
 }
@@ -1105,9 +1104,7 @@ ppwarn(char *fmt, ...)
 }
 
 struct symtab *
-lookup(namep, enterf)
-char *namep;
-int enterf;
+lookup(char *namep, int enterf)
 {
 	register char *np, *snp;
 	register int c, i; int around;
@@ -1148,7 +1145,7 @@ int enterf;
 }
 
 static struct symtab *
-slookup(p1,p2,enterf) register char *p1,*p2; int enterf;{
+slookup(register char *p1, register char *p2, int enterf) {
 	register char *p3; char c2,c3; struct symtab *np;
 	c2= *p2; *p2='\0';	/* mark end of token */
 	if ((p2-p1)>symlen)
@@ -1172,7 +1169,7 @@ slookup(p1,p2,enterf) register char *p1,*p2; int enterf;{
  * next read by the preprocessor as if it were input
  */
 static char *
-subst(p,sp) register char *p; struct symtab *sp; {
+subst(register char *p, struct symtab *sp) {
 	register char *ca,*vp; int params;
 	char *actual[MAXFRM]; /* actual[n] is text of nth actual */
 	char acttxt[BUFFERSIZ]; /* space for actuals */
@@ -1351,7 +1348,7 @@ subst(p,sp) register char *p; struct symtab *sp; {
 }
 
 static char *
-trmdir(s) register char *s; {
+trmdir(register char *s) {
 	register char *p = s;
 	while (*p++);
 	--p;
@@ -1364,7 +1361,7 @@ trmdir(s) register char *s; {
 }
 
 static char *
-copy(s) register char *s; {
+copy(register char *s) {
 	register char *old;
 
 	old = savch; while ((*savch++ = *s++) != '\0');
@@ -1372,20 +1369,18 @@ copy(s) register char *s; {
 }
 
 static char *
-strdex(s,c) char *s,c; {
+strdex(char *s, int c) {
 	while (*s) if (*s++==c) return(--s);
 	return(0);
 }
 
 int
-yywrap() {
+yywrap(void) {
 	return(1);
 }
 
 int
-main(argc,argv)
-	char *argv[];
-	int  argc;
+main(int argc, char *argv[])
 {
 	register int i,c;
 	register char *p;
@@ -1575,7 +1570,8 @@ main(argc,argv)
 # if __sparc__
 	varloc=stsym ("sparc");
 # endif
-# if __i386__
+# if __i386__ || __x86_64__
+	/* Sun cpp defines i386 on all x86 systems, regardless of ISA */
 	varloc=stsym ("i386");
 # endif
 	}
