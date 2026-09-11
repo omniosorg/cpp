@@ -690,7 +690,7 @@ unfill(register char *p) {
 
 static char *
 doincl(register char *p) {
-	int filok,inctype;
+	int filok,inctype,toolong=0;
 	register char *cp; char **dirp,*nfil; char filname[BUFFERSIZ];
 
 	filname[0] = '\0';	/* Make lint quiet */
@@ -704,17 +704,33 @@ doincl(register char *p) {
 # ifdef gimpel
 			if (*inp=='.' && !intss()) *inp='#';
 # endif
-			while (inp<p) *cp++= *inp++;
+			while (inp<p) {
+				if (cp < &filname[BUFFERSIZ-1])
+					*cp++= *inp;
+				else
+					toolong=1;
+				inp++;
+			}
 		}
 	} else if (inp[-1]=='"') {/* regular "" syntax */
 		inctype=0;
+		while (inp<p) {
 # ifdef gimpel
-		while (inp<p) {if (*inp=='.' && !intss()) *inp='#'; *cp++= *inp++;}
-# else
-		while (inp<p) *cp++= *inp++;
+			if (*inp=='.' && !intss()) *inp='#';
 # endif
-		if (*--cp=='"') *cp='\0';
+			if (cp < &filname[BUFFERSIZ-1])
+				*cp++= *inp;
+			else
+				toolong=1;
+			inp++;
+		}
+		*cp='\0';
+		if (cp>filname && cp[-1]=='"') *--cp='\0';
 	} else {pperror("bad include syntax",0); inctype=2;}
+	if (toolong) {
+		pperror("include file name too long");
+		inctype=2;
+	}
 	/* flush current file to \n , then write \n */
 	++flslvl; do {outp=inp=p; p=cotoken(p);} while (*inp!='\n'); --flslvl;
 	inp=p; dump(); if (inctype==2) return(p);
@@ -731,6 +747,11 @@ doincl(register char *p) {
 		if (filname[0]=='/' || **dirp=='\0') {
 			strcpy(nfil,filname);
 		} else {
+			if (strlen(*dirp)+strlen(filname)+2 > BUFFERSIZ) {
+				pperror("include path too long: %s/%s",
+				    *dirp,filname);
+				continue;
+			}
 			strcpy(nfil,*dirp);
 # if unix
 			strcat(nfil,"/");
@@ -1381,6 +1402,10 @@ static char *
 copy(register char *s) {
 	register char *old;
 
+	if (savch + strlen(s) >= sbf + SBSIZE) {
+		pperror("no space");
+		exit(exfail);
+	}
 	old = savch; while ((*savch++ = *s++) != '\0');
 	return(old);
 }
