@@ -2,6 +2,13 @@
 
 PARSE_ONLY=0
 
+# Only GNU diff can label the two sides
+if command -v gdiff >/dev/null 2>&1; then
+    DIFF=gdiff
+else
+    DIFF=diff
+fi
+
 function just_body {
     if [[ $PARSE_ONLY == 1 ]]; then
         sed -e '/^[[:space:]]*$/d' -e '/^#/d' \
@@ -13,9 +20,11 @@ function just_body {
 
 function test_file {
     file=$1
-    diff -L "$file (Sun cpp)" -L "$file (Joyent cpp)" -u \
-        <(/usr/lib/cpp $file 2>/dev/null | just_body) \
-        <(./cpp $file 2>/dev/null | just_body)
+    label=
+    [[ $DIFF == gdiff ]] && label="-L $file-(Sun-cpp) -L $file-(Joyent-cpp)"
+    $DIFF $label -u \
+        <(timeout 60 /usr/lib/cpp $file 2>/dev/null | just_body) \
+        <(timeout 60 ./cpp $file 2>/dev/null | just_body)
 }
 
 while getopts p name; do
@@ -31,12 +40,12 @@ if (( $# > 0 )); then
         shift;
     done
 else
-    for elt in /usr/include/**/*.h; do
+    for elt in $(find /usr/include -name '*.h' | sort); do
         # C++ that will never parse
         [[ $elt == */firefox/* ]] && continue
         # Triggers pre-ANSI infinitely recursive expansion
         [[ $elt == */ncurses/* ]] && continue
-        print -u2 "*** $elt"
+        echo "*** $elt" >&2
         test_file $elt
     done
 fi
