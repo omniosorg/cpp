@@ -829,6 +829,8 @@ dodef(char *p) {/* process '#define' */
 		cf=formtxt; pf=formal;
 		for (;;) {
 			p=skipbl(p); pin=inp;
+			if (*pin=='\\' && pin[1]=='\n')
+				continue;	/* ignore escaped lf */
 			if (*pin=='\n') {
 				--lineno[ifno];
 				--p;
