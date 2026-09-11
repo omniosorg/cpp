@@ -11,6 +11,7 @@
 
 #
 # Copyright 2020 Oxide Computer Company
+# Copyright 2026 OmniOS Community Edition (OmniOSce) Association.
 #
 
 TOP :=			$(PWD)
@@ -45,7 +46,7 @@ clean:
 	/usr/bin/rm -rf $(PROG) $(OBJDIR)
 
 $(PROG): $(OBJS:%=$(OBJDIR)/%)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 	$(CC) -c $(CFLAGS) -o $@ $^
